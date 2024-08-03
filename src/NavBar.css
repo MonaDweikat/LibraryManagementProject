@@ -1,0 +1,36 @@
+.navbar {
+  background-color: #1a2923;
+  color: #cdbda7;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.navbar-content {
+  display: flex;
+  gap: 1rem;
+}
+
+.navbar-link {
+  color: #cdbda7;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.navbar-link:hover {
+  text-decoration: underline;
+}
+
+.navbar-profile-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+}

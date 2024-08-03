@@ -1,0 +1,107 @@
+.userprofile-container {
+    padding: 0;
+    background-color: #cdbda7;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: auto;
+    background-position: 0 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.userprofile-content {
+    padding: 20px;
+    background-color: #cdbda75a;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.userprofile-field {
+    padding: 10px 0;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.userprofile-field strong {
+    color: #1e2d21;
+    margin-right: 10px;
+    width: 150px;
+}
+
+.userprofile-field span {
+    flex-grow: 1;
+}
+
+.userprofile-field input {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 4px;
+    width: 200px;
+}
+
+.userprofile-field button {
+    margin-left: 10px;
+    padding: 6px 12px;
+    border: none;
+    background-color: #758467;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.heading {
+    padding-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center; 
+    color: #1e2d21;
+}
+
+.userprofile-field button:hover {
+    background-color: #510f1c;
+}
+
+.update-profile-button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #758467;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    width: 150px;
+    max-width: 600px;
+    display: block;
+    align-self: center;
+}
+
+.update-profile-button:hover {
+    background-color: #510f1c;
+}
+
+.message {
+    margin-top: 0.5rem;
+    padding: 0.5rem;
+    font-weight: bold;
+}
+
+.success-message {
+    color: #1e2d21;
+}
+
+.error-message {
+    color: #1e2d21;
+}

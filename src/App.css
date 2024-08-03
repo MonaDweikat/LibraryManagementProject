@@ -1,0 +1,124 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.background-container {
+  background-image: url('./assets/bookBackground.jpg');
+  background-size: auto;
+  background-position: 0 0;
+  background-repeat: repeat;
+  background-attachment: fixed;
+  min-height: 100vh;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+.box {
+  background-color: #cdbda76f;
+  border-radius: 12px;
+  width: 60vmin;
+  height: 45vmin;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+label {
+  margin-right: 1rem;
+  font-weight: bold;
+  color: #1e2d21;
+  flex: 1;
+  font-family: 'Gupter';
+}
+
+input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: #510f1c;
+  background-color: #cdbda7;
+}
+
+button {
+  color: rgb(255, 255, 255);
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem 1.2rem;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 0.5em;
+  width: 7em;
+}
+
+button:hover {
+  background-color: #510f1c !important;
+}
+
+.button-container {
+  display: flex;
+  gap: 1rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.logo {
+  height: 50px;
+  margin-right: 10px;
+}
+
+.title {
+  font-size: 24px;
+  margin: 0;
+}
+
+.message {
+  margin-top: 0.5rem;
+  padding: 0.5rem;
+  font-weight: bold;
+}
+
+.success-message {
+  color: #1e2d21;
+}
+
+.error-message {
+  color: #1e2d21;
+}
