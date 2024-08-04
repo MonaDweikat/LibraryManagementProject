@@ -1,0 +1,72 @@
+.viewbooks-container {
+    padding: 0;
+    background-color: #758467;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-size: auto;
+    background-position: 0 0;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.viewbooks-content {
+    padding: 20px;
+    background-color: #cdbda75a;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.viewbooks-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.viewbooks-table th, .viewbooks-table td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: left;
+}
+
+.viewbooks-table th {
+    background-color: #cdbda76f;
+    color: white;
+}
+
+.viewbooks-table td {
+    background-color: #ffffff;
+}
+
+.viewbooks-heading {
+    padding-top: 20px;
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center; 
+    color: #1e2d21;
+}
+
+.viewbooks-action-button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: none;
+    background-color: #758467;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 150px;
+    text-align: center;
+}
+
+.viewbooks-action-button:hover {
+    background-color: #510f1c;
+}

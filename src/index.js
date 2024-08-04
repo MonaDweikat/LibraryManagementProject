@@ -17,7 +17,6 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
-
 app.use(express.static(path.join(__dirname, '../dist')));
 
 const authenticate = (req, res, next) => {
@@ -42,6 +41,8 @@ client.connect()
     console.log('Connected to MongoDB');
     const db = client.db('LibraryDB');
     const librariansCollection = db.collection('librarians');
+    const booksCollection = db.collection('books');
+    const studentsCollection = db.collection('students');
 
     // Login endpoint
     app.post('/api/login', async (req, res) => {
@@ -150,20 +151,146 @@ client.connect()
           }
         }
 
-    const result = await librariansCollection.updateOne({ _id: new ObjectId(req.user.id) }, { $set: updates });
+        const result = await librariansCollection.updateOne({ _id: new ObjectId(req.user.id) }, { $set: updates });
 
-    if (result.modifiedCount > 0) {
-      const updatedUser = await librariansCollection.findOne({ _id: new ObjectId(req.user.id) });
-      res.json(updatedUser);
-    } else {
-      res.status(404).send('User not found');
-    }
-  } catch (err) {
-    console.error('Error updating profile:', err);
-    res.status(500).send('Error updating profile');
-  }
-});
+        if (result.modifiedCount > 0) {
+          const updatedUser = await librariansCollection.findOne({ _id: new ObjectId(req.user.id) });
+          res.json(updatedUser);
+        } else {
+          res.status(404).send('User not found');
+        }
+      } catch (err) {
+        console.error('Error updating profile:', err);
+        res.status(500).send('Error updating profile');
+      }
+    });
 
+    // Adding book endpoint
+    app.post('/api/addbook', authenticate, async (req, res) => {
+      try {
+        const { title, author, isbn, publishDate, copies } = req.body;
+
+        console.log('Received request to add book with:', { title, author, isbn, publishDate, copies });
+
+        if (!title || !author || !isbn || !copies) {
+          console.log('Validation failed: Missing required fields');
+          return res.status(400).json({ message: 'Title, author, ISBN, and number of copies are required.' });
+        }
+
+        const existingBook = await booksCollection.findOne({ isbn });
+
+        if (existingBook) {
+          await booksCollection.updateOne(
+            { isbn },
+            {
+              $set: { title, author, publishDate: publishDate || null },
+              $inc: { counter: copies }
+            }
+          );
+          res.status(200).json({ message: 'Book updated successfully' });
+        } else {
+          await booksCollection.insertOne({
+            title,
+            author,
+            isbn,
+            publishDate: publishDate || null,
+            counter: copies 
+          });
+          res.status(201).json({ message: 'Book added successfully' });
+        }
+      } catch (err) {
+        console.error('Error adding book:', err.message);
+        res.status(500).send(`Error adding book: ${err.message}`);
+      }
+    });
+
+    // Increment book counter endpoint
+    app.post('/api/incrementbook', authenticate, async (req, res) => {
+      try {
+        const { isbn, copies } = req.body;
+
+        if (!isbn || !copies) {
+          return res.status(400).json({ message: 'ISBN and number of copies are required.' });
+        }
+
+        const result = await booksCollection.updateOne(
+          { isbn },
+          { $inc: { counter: copies } }
+        );
+
+        if (result.modifiedCount > 0) {
+          res.json({ message: 'Book counter incremented successfully' });
+        } else {
+          res.status(404).json({ message: 'Book not found' });
+        }
+      } catch (err) {
+        console.error('Error incrementing book counter:', err.message);
+        res.status(500).send(`Error incrementing book counter: ${err.message}`);
+      }
+    });
+    // List all books endpoint
+    app.get('/api/listbooks', authenticate, async (req, res) => {
+      try {
+        const books = await booksCollection.find().toArray();
+        res.json(books);
+      } catch (err) {
+        console.error('Error listing books:', err.message);
+        res.status(500).send(`Error listing books: ${err.message}`);
+      }
+    });
+
+      // Add student endpoint
+    app.post('/api/addstudent', authenticate, async (req, res) => {
+      try {
+        console.log('Request body:', req.body);
+        console.log('Request headers:', req.headers);
+
+        const { firstName, lastName, email, membershipPlan } = req.body;
+
+        const validMemberships = ['Basic', 'Standard', 'Premium'];
+
+        if (!firstName || !lastName || !email || !membershipPlan) {
+          console.log('Validation failed: Missing required fields');
+          return res.status(400).json({ message: 'All fields (firstName, lastName, email, membershipPlan) are required.' });
+        }
+
+        if (!validMemberships.includes(membershipPlan)) {
+          console.log('Validation failed: Invalid membership choice');
+          return res.status(400).json({ message: 'Invalid membership choice.' });
+        }
+
+        const existingStudent = await studentsCollection.findOne({ email });
+
+        if (existingStudent) {
+          return res.status(400).json({ message: 'Student with this email already exists.' });
+        }
+
+        const result = await studentsCollection.insertOne({
+          firstName,
+          lastName,
+          email,
+          membership: membershipPlan
+        });
+
+        console.log('Student inserted with id:', result.insertedId);
+
+        res.status(201).json({ message: 'Student added successfully!' });
+      } catch (err) {
+        console.error('Error adding student:', err.message);
+        res.status(500).send(`Error adding student: ${err.message}`);
+      }
+    });
+
+    // List all students endpoint
+    app.get('/api/liststudents', authenticate, async (req, res) => {
+      try {
+        const students = await studentsCollection.find().toArray();
+        res.json(students);
+      } catch (err) {
+        console.error('Error listing students:', err.message);
+        res.status(500).send(`Error listing students: ${err.message}`);
+      }
+    });
     // Serve the home page
     app.get('/api/homepage', (req, res) => {
       res.sendFile(path.join(__dirname, '../dist', 'index.html'));
