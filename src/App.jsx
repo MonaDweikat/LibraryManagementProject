@@ -1,6 +1,7 @@
 import './App.css';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 function App() {
   const [username, setUsername] = useState('');
@@ -48,7 +49,7 @@ function App() {
         <div className="box">
           <form className="form" onSubmit={handleLogin}>
             <div className="form-group">
-              <label htmlFor="username">Username:</label>
+              <label htmlFor="username">Username</label>
               <input
                 type="text"
                 id="username"
@@ -60,7 +61,7 @@ function App() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="password">Password:</label>
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
@@ -71,9 +72,9 @@ function App() {
                 required
               />
             </div>
-            <div className="button-container">
-              <button style={{ backgroundColor: '#758467' }} type="submit">Login</button>
-              <button style={{ backgroundColor: '#758467' }} type="button" onClick={handleSignUp}>Sign Up</button>
+            <div className="login-button-container">
+              <button type="submit" className="login-button">Login</button>
+              <Link to="/signup" className="signup-link" onClick={handleSignUp}>Do not have an account? Sign Up!</Link>
             </div>
             {message && <p className={messageClass}>{message}</p>}
           </form>

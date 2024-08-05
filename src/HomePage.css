@@ -35,8 +35,8 @@ html, body {
 }
 
 .rounded-image {
-  border-radius: 15px; /* Adjust the radius as needed */
-  width: 130px; /* Adjust the width as needed */
+  border-radius: 60px;
+  width: 130px;
   margin-bottom: 2rem;
 }
 

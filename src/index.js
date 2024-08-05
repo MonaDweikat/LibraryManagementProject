@@ -43,7 +43,8 @@ client.connect()
     const librariansCollection = db.collection('librarians');
     const booksCollection = db.collection('books');
     const studentsCollection = db.collection('students');
-
+    const borrowedBooksCollection = db.collection('borrowedBooks');
+    const feesCollection = db.collection('fees');
     // Login endpoint
     app.post('/api/login', async (req, res) => {
       try {
@@ -239,19 +240,19 @@ client.connect()
       }
     });
 
-      // Add student endpoint
+   // Add student endpoint
     app.post('/api/addstudent', authenticate, async (req, res) => {
       try {
         console.log('Request body:', req.body);
         console.log('Request headers:', req.headers);
 
-        const { firstName, lastName, email, membershipPlan } = req.body;
+        const { firstName, lastName, email, membershipPlan, startDate } = req.body;
 
         const validMemberships = ['Basic', 'Standard', 'Premium'];
 
-        if (!firstName || !lastName || !email || !membershipPlan) {
+        if (!firstName || !lastName || !email || !membershipPlan || !startDate) {
           console.log('Validation failed: Missing required fields');
-          return res.status(400).json({ message: 'All fields (firstName, lastName, email, membershipPlan) are required.' });
+          return res.status(400).json({ message: 'All fields (firstName, lastName, email, membershipPlan, startDate) are required.' });
         }
 
         if (!validMemberships.includes(membershipPlan)) {
@@ -269,7 +270,8 @@ client.connect()
           firstName,
           lastName,
           email,
-          membership: membershipPlan
+          membership: membershipPlan,
+          startDate
         });
 
         console.log('Student inserted with id:', result.insertedId);
@@ -281,6 +283,7 @@ client.connect()
       }
     });
 
+
     // List all students endpoint
     app.get('/api/liststudents', authenticate, async (req, res) => {
       try {
@@ -291,6 +294,194 @@ client.connect()
         res.status(500).send(`Error listing students: ${err.message}`);
       }
     });
+
+    // Lend book endpoint
+    app.post('/api/lendbook', authenticate, async (req, res) => {
+      try {
+        const { bookISBN, borrowerName, borrowDate } = req.body;
+
+        if (!bookISBN || !borrowerName || !borrowDate) {
+          return res.status(400).json({ message: 'Book ISBN, borrower name, and date of borrowing are required.' });
+        }
+
+        const borrowDateObj = new Date(borrowDate);
+        const returnDateObj = new Date(borrowDateObj);
+        returnDateObj.setDate(borrowDateObj.getDate() + 7);
+
+        const book = await booksCollection.findOne({ isbn: bookISBN });
+        if (!book || book.counter <= 0) {
+          return res.status(404).json({ message: 'Book not found or no copies available.' });
+        }
+
+        const student = await studentsCollection.findOne({ email: borrowerName });
+        if (!student) {
+          return res.status(404).json({ message: 'Student not found.' });
+        }
+
+        await borrowedBooksCollection.insertOne({
+          bookISBN,
+          borrowerName,
+          borrowDate,
+          returnDate: null
+        });
+
+        await booksCollection.updateOne(
+          { isbn: bookISBN },
+          { $inc: { counter: -1 } }
+        );
+
+        res.json({ message: 'Book lent successfully!' });
+      } catch (err) {
+        console.error('Error lending book:', err.message);
+        res.status(500).send(`Error lending book: ${err.message}`);
+      }
+    });
+
+    // Return book endpoint
+    app.post('/api/returnbook', authenticate, async (req, res) => {
+      try {
+        const { bookISBN, borrowerName } = req.body;
+
+        if (!bookISBN || !borrowerName) {
+          return res.status(400).json({ message: 'Book ISBN and borrower name are required.' });
+        }
+
+        const borrowedBook = await borrowedBooksCollection.findOne({
+          bookISBN,
+          borrowerName,
+          returnDate: null
+        });
+
+        if (!borrowedBook) {
+          return res.status(404).json({ message: 'Book not found or already returned.' });
+        }
+
+        await borrowedBooksCollection.updateOne(
+          { _id: borrowedBook._id },
+          { $set: { returnDate: new Date() } } 
+        );
+
+        await booksCollection.updateOne(
+          { isbn: bookISBN },
+          { $inc: { counter: 1 } }
+        );
+
+        res.json({
+          message: 'Book returned successfully!',
+          actualReturnDate: new Date().toISOString().split('T')[0]
+        });
+      } catch (err) {
+        console.error('Error returning book:', err.message);
+        res.status(500).send(`Error returning book: ${err.message}`);
+      }
+    });
+
+    // View lent books endpoint
+    app.get('/api/viewlentbooks', authenticate, async (req, res) => {
+      try {
+        const lentBooks = await borrowedBooksCollection.find().toArray();
+        res.json(lentBooks);
+      } catch (err) {
+        console.error('Error fetching lent books:', err.message);
+        res.status(500).send(`Error fetching lent books: ${err.message}`);
+      }
+    });
+
+    // Return book endpoint
+    app.post('/api/returnbook', authenticate, async (req, res) => {
+      try {
+        const { bookISBN, borrowerName } = req.body;
+
+        if (!bookISBN || !borrowerName) {
+          return res.status(400).json({ message: 'Book ISBN and borrower name are required.' });
+        }
+
+        const borrowedBook = await borrowedBooksCollection.findOne({
+          bookISBN,
+          borrowerName,
+          returnDate: null
+        });
+
+        if (!borrowedBook) {
+          return res.status(404).json({ message: 'Book not found or already returned.' });
+        }
+
+        await borrowedBooksCollection.updateOne(
+          { _id: borrowedBook._id },
+          { $set: { returnDate: new Date() } }
+        );
+
+        await booksCollection.updateOne(
+          { isbn: bookISBN },
+          { $inc: { counter: 1 } }
+        );
+
+        res.json({
+          message: 'Book returned successfully!',
+          actualReturnDate: new Date().toISOString().split('T')[0]
+        });
+      } catch (err) {
+        console.error('Error returning book:', err.message);
+        res.status(500).send(`Error returning book: ${err.message}`);
+      }
+    });
+
+    app.post('/api/managefees', authenticate, async (req, res) => {
+      try {
+        const { email, membership, fee, lastPaymentDate } = req.body;
+    
+        if (!email || !membership || !fee || !lastPaymentDate) {
+          return res.status(400).json({ message: 'All fields are required.' });
+        }
+    
+        const lastPaymentDateObj = new Date(lastPaymentDate);
+        const today = new Date();
+        const nextPaymentDate = new Date(lastPaymentDateObj);
+        nextPaymentDate.setMonth(lastPaymentDateObj.getMonth() + 1);
+        const isOverdue = today > nextPaymentDate;
+    
+        await feesCollection.updateOne(
+          { email },
+          {
+            $set: {
+              membership,
+              fee,
+              lastPaymentDate,
+              overdue: isOverdue
+            }
+          },
+          { upsert: true }
+        );
+    
+        res.json({ message: 'Fee record updated successfully!' });
+      } catch (err) {
+        console.error('Error managing fees:', err.message);
+        res.status(500).send(`Error managing fees: ${err.message}`);
+      }
+    });
+    
+    app.get('/api/liststudentswithfees', authenticate, async (req, res) => {
+      try {
+        const students = await studentsCollection.find().toArray();
+        const fees = await feesCollection.find().toArray();
+    
+        const studentsWithFees = students.map(student => {
+          const feeRecord = fees.find(fee => fee.email === student.email) || {};
+          return {
+            ...student,
+            fee: feeRecord.fee || 0,
+            overdue: feeRecord.overdue || false,
+            lastPaymentDate: feeRecord.lastPaymentDate || ''
+          };
+        });
+    
+        res.json(studentsWithFees);
+      } catch (err) {
+        console.error('Error listing students with fees:', err.message);
+        res.status(500).send(`Error listing students with fees: ${err.message}`);
+      }
+    });
+    
     // Serve the home page
     app.get('/api/homepage', (req, res) => {
       res.sendFile(path.join(__dirname, '../dist', 'index.html'));

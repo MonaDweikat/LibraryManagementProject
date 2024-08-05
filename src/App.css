@@ -1,10 +1,3 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
-}
-
 .background-container {
   background-image: url('./assets/bookBackground.jpg');
   background-size: auto;
@@ -85,28 +78,24 @@ button {
 }
 
 button:hover {
-  background-color: #510f1c !important;
+  background-color: #510f1c;
 }
 
-.button-container {
+.login-button-container {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1rem;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  padding: 10px;
+.signup-link {
+  color: #cdbda7;
+  text-decoration: none;
+  font-weight: bold;
 }
 
-.logo {
-  height: 50px;
-  margin-right: 10px;
-}
-
-.title {
-  font-size: 24px;
-  margin: 0;
+.signup-link:hover {
+  text-decoration: underline;
 }
 
 .message {

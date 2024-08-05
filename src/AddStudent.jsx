@@ -7,11 +7,18 @@ function AddStudent() {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [membershipPlan, setMembershipPlan] = useState('');
+  const [startDate, setStartDate] = useState('');
   const [responseMessage, setResponseMessage] = useState('');
   const [messageType, setMessageType] = useState('');
 
   const membershipPlans = ['Basic', 'Standard', 'Premium'];
   const allowedDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+
+  const planFees = {
+    Basic: 10,
+    Standard: 20,
+    Premium: 30
+  };
 
   const isValidEmailDomain = (email) => {
     const domain = email.split('@')[1];
@@ -21,7 +28,7 @@ function AddStudent() {
   const handleSubmit = async (event) => {
     event.preventDefault();
 
-    if (!firstName || !lastName || !email || !membershipPlan) {
+    if (!firstName || !lastName || !email || !membershipPlan || !startDate) {
       setResponseMessage('Please fill out all required fields.');
       setMessageType('error');
       return;
@@ -37,7 +44,9 @@ function AddStudent() {
       firstName,
       lastName,
       email,
-      membershipPlan
+      membershipPlan,
+      startDate,
+      fee: planFees[membershipPlan]
     };
 
     try {
@@ -55,11 +64,11 @@ function AddStudent() {
       if (response.ok) {
         setResponseMessage(result.message);
         setMessageType('success');
-        // Clear fields
         setFirstName('');
         setLastName('');
         setEmail('');
         setMembershipPlan('');
+        setStartDate('');
       } else {
         setResponseMessage(`Failed to add student: ${result.message || 'Unknown error'}`);
         setMessageType('error');
@@ -126,6 +135,17 @@ function AddStudent() {
                   <option key={plan} value={plan}>{plan}</option>
                 ))}
               </select>
+            </div>
+            <div className="form-group">
+              <label htmlFor="startDate">Membership Start Date:</label>
+              <input
+                type="date"
+                id="startDate"
+                name="startDate"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                required
+              />
             </div>
             <button type="submit">Add Student</button>
             {responseMessage && (
