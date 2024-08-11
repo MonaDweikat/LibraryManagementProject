@@ -245,7 +245,12 @@ client.connect()
       try {
         console.log('Request body:', req.body);
         console.log('Request headers:', req.headers);
-
+        const planFees = {
+          Basic: 10,
+          Standard: 20,
+          Premium: 30
+        };
+        
         const { firstName, lastName, email, membershipPlan, startDate } = req.body;
 
         const validMemberships = ['Basic', 'Standard', 'Premium'];
@@ -275,6 +280,21 @@ client.connect()
         });
 
         console.log('Student inserted with id:', result.insertedId);
+
+        // Create initial fee record for the new student
+        const startDateObj = new Date(startDate);
+        await feesCollection.updateOne(
+          { email },
+          {
+            $set: {
+              membership: membershipPlan,
+              fee: planFees[membershipPlan] || 0,
+              lastPaymentDate: startDateObj.toISOString().split('T')[0],
+              overdue: false
+            }
+          },
+          { upsert: true }
+        );
 
         res.status(201).json({ message: 'Student added successfully!' });
       } catch (err) {
@@ -426,6 +446,7 @@ client.connect()
       }
     });
 
+    // Manage fees endpoint
     app.post('/api/managefees', authenticate, async (req, res) => {
       try {
         const { email, membership, fee, lastPaymentDate } = req.body;
@@ -440,6 +461,9 @@ client.connect()
         nextPaymentDate.setMonth(lastPaymentDateObj.getMonth() + 1);
         const isOverdue = today > nextPaymentDate;
     
+        // Debug: Check values being saved
+        console.log('Updating fees:', { email, membership, fee, lastPaymentDate, isOverdue });
+    
         await feesCollection.updateOne(
           { email },
           {
@@ -449,8 +473,7 @@ client.connect()
               lastPaymentDate,
               overdue: isOverdue
             }
-          },
-          { upsert: true }
+          }
         );
     
         res.json({ message: 'Fee record updated successfully!' });
@@ -460,27 +483,18 @@ client.connect()
       }
     });
     
+    
+    // List students with fees endpoint
     app.get('/api/liststudentswithfees', authenticate, async (req, res) => {
       try {
-        const students = await studentsCollection.find().toArray();
-        const fees = await feesCollection.find().toArray();
-    
-        const studentsWithFees = students.map(student => {
-          const feeRecord = fees.find(fee => fee.email === student.email) || {};
-          return {
-            ...student,
-            fee: feeRecord.fee || 0,
-            overdue: feeRecord.overdue || false,
-            lastPaymentDate: feeRecord.lastPaymentDate || ''
-          };
-        });
-    
-        res.json(studentsWithFees);
+        const students = await feesCollection.find().toArray();
+        res.json(students);
       } catch (err) {
-        console.error('Error listing students with fees:', err.message);
-        res.status(500).send(`Error listing students with fees: ${err.message}`);
+        console.error('Error listing students:', err.message);
+        res.status(500).send(`Error listing students: ${err.message}`);
       }
     });
+    
     
     // Serve the home page
     app.get('/api/homepage', (req, res) => {

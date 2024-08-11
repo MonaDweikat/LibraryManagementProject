@@ -35,7 +35,9 @@ function ManageFees() {
     fetchStudentsWithFees();
   }, []);
 
-  const handleUpdateFee = async (email, fee, lastPaymentDate) => {
+  const handleUpdateFee = async (email, fee) => {
+    const today = new Date().toISOString().split('T')[0];
+  
     try {
       const response = await fetch('/api/managefees', {
         method: 'POST',
@@ -43,25 +45,41 @@ function ManageFees() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ email, fee, lastPaymentDate }),
+        body: JSON.stringify({
+          email,
+          membership: 'Basic', // Default membership
+          fee,
+          lastPaymentDate: today,
+        }),
       });
-
+  
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || 'An error occurred');
         return;
       }
-
-      const updatedStudents = students.map(student => 
-        student.email === email ? { ...student, fee, lastPaymentDate, overdue: new Date() > new Date(new Date(lastPaymentDate).setMonth(new Date(lastPaymentDate).getMonth() + 1)) } : student
-      );
-      setStudents(updatedStudents);
+  
+      // Fetch updated student list to reflect changes
+      const updatedResponse = await fetch('/api/liststudentswithfees', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+  
+      if (!updatedResponse.ok) {
+        const errorData = await updatedResponse.json();
+        setError(errorData.message || 'An error occurred while fetching updated list');
+        return;
+      }
+  
+      const updatedData = await updatedResponse.json();
+      setStudents(updatedData);
     } catch (err) {
       setError('Failed to update fee');
       console.error('Error updating fee:', err);
     }
   };
-
+  
   return (
     <div className="managefees-container">
       <NavBar />
@@ -87,7 +105,7 @@ function ManageFees() {
                 <tr key={index}>
                   <td>{student.firstName} {student.lastName}</td>
                   <td>{student.email}</td>
-                  <td>{student.membershipPlan}</td>
+                  <td>{student.membership}</td>
                   <td>{student.fee}</td>
                   <td>{student.lastPaymentDate}</td>
                   <td>
